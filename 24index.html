@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevCanvas Pro - SVG Pattern & Shape Studio</title>
+    
+    <!-- CSS STYLES -->
+    <style>
+        :root {
+            --bg: #0f172a;
+            --panel: #1e293b;
+            --border: #334155;
+            --accent: #38bdf8;
+            --accent-hover: #0284c7;
+            --text: #f8fafc;
+            --text-dim: #94a3b8;
+            --success: #22c55e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 30px 15px;
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        header h1 {
+            color: var(--accent);
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: var(--text-dim);
+            font-size: 1rem;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 25px;
+        }
+
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        label {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        input[type="color"], select, input[type="range"] {
+            width: 100%;
+            background: #090d16;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            outline: none;
+        }
+
+        input[type="color"] {
+            height: 40px;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        select, input[type="range"] {
+            padding: 10px;
+        }
+
+        .preview-box {
+            width: 100%;
+            height: 320px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        textarea {
+            width: 100%;
+            height: 110px;
+            background: #090d16;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            color: var(--accent);
+            font-family: monospace;
+            font-size: 0.85rem;
+            resize: vertical;
+            outline: none;
+        }
+
+        button {
+            background: var(--accent);
+            color: #0f172a;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: var(--accent-hover);
+            color: #fff;
+        }
+
+        @media (max-width: 850px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🎨 DevCanvas Pro</h1>
+        <p>Veb-saytlar uchun SVG Pattern va Naqshlar Generatori</p>
+    </header>
+
+    <div class="container">
+        
+        <!-- CONTROL PANEL -->
+        <div class="card">
+            <h2 style="font-size: 1.2rem; color: var(--accent); margin-bottom: 15px;">⚙️ Sozlamalar</h2>
+            <div class="controls">
+                <div>
+                    <label>Naqsh Turi:</label>
+                    <select id="patternType" onchange="generatePattern()">
+                        <option value="dots">Nuqtalar (Dots)</option>
+                        <option value="grid">To'r (Grid)</option>
+                        <option value="circles">Aylanalar (Circles)</option>
+                        <option value="waves">To'lqinlar (Waves)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Fon Rangi (Background):</label>
+                    <input type="color" id="bgColor" value="#0f172a" oninput="generatePattern()">
+                </div>
+
+                <div>
+                    <label>Naqsh Rangi (Pattern):</label>
+                    <input type="color" id="fgColor" value="#38bdf8" oninput="generatePattern()">
+                </div>
+
+                <div>
+                    <label>
+                        <span>O'lcham (Size):</span>
+                        <span id="sizeVal">20px</span>
+                    </label>
+                    <input type="range" id="sizeRange" min="10" max="60" value="20" oninput="generatePattern()">
+                </div>
+
+                <div>
+                    <label>
+                        <span>Shaffoflik (Opacity):</span>
+                        <span id="opacityVal">0.5</span>
+                    </label>
+                    <input type="range" id="opacityRange" min="0.1" max="1" step="0.1" value="0.5" oninput="generatePattern()">
+                </div>
+            </div>
+        </div>
+
+        <!-- PREVIEW & CODE PANEL -->
+        <div class="card">
+            <h2 style="font-size: 1.2rem; margin-bottom: 15px;">👁️ Ko'rinishi (Preview)</h2>
+            
+            <div class="preview-box" id="previewBox"></div>
+
+            <label>CSS Background Kodi:</label>
+            <textarea id="cssOutput" readonly></textarea>
+
+            <button onclick="copyCSS()">CSS Kodni Nusxalash 📋</button>
+        </div>
+
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        const patternType = document.getElementById('patternType');
+        const bgColor = document.getElementById('bgColor');
+        const fgColor = document.getElementById('fgColor');
+        const sizeRange = document.getElementById('sizeRange');
+        const opacityRange = document.getElementById('opacityRange');
+        const previewBox = document.getElementById('previewBox');
+        const cssOutput = document.getElementById('cssOutput');
+
+        function generatePattern() {
+            const size = parseInt(sizeRange.value);
+            const bg = bgColor.value;
+            const fg = fgColor.value;
+            const opacity = opacityRange.value;
+
+            document.getElementById('sizeVal').innerText = size + 'px';
+            document.getElementById('opacityVal').innerText = opacity;
+
+            let svgString = '';
+
+            if (patternType.value === 'dots') {
+                svgString = `<svg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}' viewBox='0 0 ${size} ${size}'><circle cx='${size/2}' cy='${size/2}' r='${size/6}' fill='${fg}' fill-opacity='${opacity}'/></svg>`;
+            } else if (patternType.value === 'grid') {
+                svgString = `<svg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}' viewBox='0 0 ${size} ${size}'><path d='M ${size} 0 L 0 0 0 ${size}' fill='none' stroke='${fg}' stroke-opacity='${opacity}' stroke-width='1'/></svg>`;
+            } else if (patternType.value === 'circles') {
+                svgString = `<svg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}' viewBox='0 0 ${size} ${size}'><circle cx='${size/2}' cy='${size/2}' r='${size/3}' fill='none' stroke='${fg}' stroke-opacity='${opacity}' stroke-width='1'/></svg>`;
+            } else if (patternType.value === 'waves') {
+                svgString = `<svg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}' viewBox='0 0 ${size} ${size}'><path d='M0 ${size/2} Q ${size/4} 0, ${size/2} ${size/2} T ${size} ${size/2}' fill='none' stroke='${fg}' stroke-opacity='${opacity}' stroke-width='1.5'/></svg>`;
+            }
+
+            const encodedSvg = encodeURIComponent(svgString);
+            const cssRule = `background-color: ${bg};\nbackground-image: url("data:image/svg+xml,${encodedSvg}");`;
+
+            previewBox.style.backgroundColor = bg;
+            previewBox.style.backgroundImage = `url("data:image/svg+xml,${encodedSvg}")`;
+
+            cssOutput.value = cssRule;
+        }
+
+        function copyCSS() {
+            cssOutput.select();
+            navigator.clipboard.writeText(cssOutput.value);
+            alert('CSS kodi nusxalandi! ✅');
+        }
+
+        // Boshlang'ich naqshni hosil qilish
+        generatePattern();
+    </script>
+</body>
+</html>
